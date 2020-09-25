@@ -40,7 +40,6 @@ ipcMain.on('load-pois', function(event) {
 	}
 	var pois = []
 	folders.forEach(function (folder) {
-	    if (folder == '.*') continue;
 	    dir = './poi/'+folder+'/'
 	    file = dir + 'head.txt'
 
