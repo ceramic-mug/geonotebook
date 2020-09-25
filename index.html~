@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>🌍 GeoNotebook</title>
+		<link rel="stylesheet" href="./css/main.css"/>
+		<link rel="stylesheet" href="bower_components/leaflet/dist/leaflet.css" />
+	</head>
+	<body>
+		<div id="map"></div>
+		<script>
+			
+		</script>
+	</body>
+</html>

@@ -1,0 +1,30 @@
+{
+  "name": "geonotebook",
+  "version": "1.0.0",
+  "description": "A notebook that includes space and time",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ceramic-mug/geonotebook.git"
+  },
+  "keywords": [
+    "Map",
+    "Notebook"
+  ],
+  "author": "CeramicMug",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ceramic-mug/geonotebook/issues"
+  },
+  "homepage": "https://github.com/ceramic-mug/geonotebook#readme",
+  "devDependencies": {
+    "electron": "^9.2.1"
+  },
+  "dependencies": {
+    "leaflet": "^1.7.1",
+    "mapbox-gl": "^1.12.0"
+  }
+}
