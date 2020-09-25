@@ -24,6 +24,8 @@ function createWindow() {
     MainWin.loadFile('index.html')
 }
 
+/* ********* STARTUP ********* */
+
 // wait until the app starts, then load the main window
 app.whenReady().then(createWindow)
 console.info("Main window created.")
@@ -47,4 +49,19 @@ ipcMain.on('load-pois', function(event) {
 	    pois.push(file)
 	})
 	event.returnValue = pois
-    })})
+	})})
+
+	/* ********************** */
+
+/* ******* POI Map Interactions ******* */
+ipcMain.on('map-click', function(event) {
+	console.log('Map clicked. Enter name for new POI or return NULL');
+	const nameWinHeight = 100;
+	const nameWinWidth = 600;
+	var nameWin = new BrowserWindow({
+		width: nameWinWidth,
+		height: nameWinHeight,
+		frame: false
+	})
+	nameWin.loadFile('./src/nameWin.html')
+})

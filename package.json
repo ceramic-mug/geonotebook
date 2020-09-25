@@ -24,6 +24,7 @@
     "electron": "^9.2.1"
   },
   "dependencies": {
+    "electron-prompt": "^1.6.0",
     "leaflet": "^1.7.1",
     "mapbox-gl": "^1.12.0"
   }
