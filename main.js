@@ -15,19 +15,21 @@ function createWindow() {
 	width: mainWinWidth,
 	height: mainWinHeight,
 	frame: true,
+	titleBarStyle: "default",
 	webPreferences: {
 	    nodeIntegration: true
 	}
     })
 
     // load index.html of app
-    MainWin.loadFile('index.html')
+	MainWin.loadFile('index.html')
+	return MainWin
 }
 
 /* ********* STARTUP ********* */
 
 // wait until the app starts, then load the main window
-app.whenReady().then(createWindow)
+MainWin = app.whenReady().then(createWindow)
 console.info("Main window created.")
 
 // create a folder to hold pois if note already created
@@ -61,7 +63,12 @@ ipcMain.on('map-click', function(event) {
 	var nameWin = new BrowserWindow({
 		width: nameWinWidth,
 		height: nameWinHeight,
-		frame: false
-	})
+		frame: false,
+		parent: MainWin,
+		webPreferences: {
+            nodeIntegration: true
+        }
+    })
 	nameWin.loadFile('./src/nameWin.html')
+	ipcMain.on('no-name', nameWin.close)
 })

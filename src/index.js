@@ -54,13 +54,17 @@ function datestring() {
 }
 
 // When map is clicked, create a popup with the coordinates of the click and date of click
+// function onMapClick(e) {
+
+//     ll = e.latlng.toString().replace('LatLng(','').replace(')','')
+
+//     var marker = L.marker(e.latlng).addTo(map);
+
+//     marker.bindPopup(popupText(name,datestring(),ll)).openPopup();
+// }
+
 function onMapClick(e) {
-
-    ll = e.latlng.toString().replace('LatLng(','').replace(')','')
-
-    var marker = L.marker(e.latlng).addTo(map);
-
-    marker.bindPopup(popupText(name,datestring(),ll)).openPopup();
+    ipcRenderer.sendSync('map-click')
 }
 
 function popupText(t,d,c) {
@@ -80,8 +84,6 @@ L.tileLayer(layer['mapbox']['url'], {
     accessToken: layer['mapbox']['accessToken']
 }).addTo(map);
 
-// listen for clicks on the map and add POI
-document.addEventListener('click', map.on('click', onMapClick))
 
 // add saved pois to map
 pois = ipcRenderer.sendSync('load-pois')
@@ -108,3 +110,6 @@ pois.forEach( function (file) {
 
     })
 })
+
+// listen for clicks on the map and add POI
+document.addEventListener('click', map.on('click', onMapClick))
