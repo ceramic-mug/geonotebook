@@ -58,12 +58,13 @@ ipcMain.on('load-pois', function(event) {
 /* ******* POI Map Interactions ******* */
 ipcMain.on('map-click', function(event) {
 	console.log('Map clicked. Enter name for new POI or return NULL');
-	const nameWinHeight = 100;
-	const nameWinWidth = 600;
+	const nameWinHeight = 150;
+	const nameWinWidth = 400;
 	var nameWin = new BrowserWindow({
 		width: nameWinWidth,
 		height: nameWinHeight,
 		frame: false,
+		titleBarStyle: "hidden",
 		parent: MainWin,
 		webPreferences: {
             nodeIntegration: true

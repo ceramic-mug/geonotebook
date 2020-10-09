@@ -1,5 +1,4 @@
 const { ipcRenderer } = require("electron");
-const prompt = require("electron-prompt");
 
 /* Renderer Process */
 
@@ -22,20 +21,3 @@ const prompt = require("electron-prompt");
     to regular map state. No new POI added.
 */
 
-prompt({
-    title: 'Location Name',
-    label: 'Name:',
-    value: 'Enter a location name...',
-    type: 'input'
-})
-.then((r) => {
-    if(r === null) {
-        console.log('no name given');
-        ipcRenderer.sendSync('no-name')
-    } else {
-        console.log('name', r);
-    }
-})
-.catch(console.error);
-
-// from https://www.npmjs.com/package/electron-prompt
