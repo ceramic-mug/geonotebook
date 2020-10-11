@@ -6,6 +6,7 @@
     bottom:0;
     right:0;
     left:0;
+    z-index: 0;
 }
 
 body {
@@ -26,3 +27,48 @@ h1 {
 #locTitle {
     /* TODO: stylize form to collect location data */
 }
+
+/********** MENUS **************/
+
+.sidebar {
+    height: 100%; /* bottom to top */
+    width: 0; /* change with js */
+    position: fixed; /* don't move */
+    z-index: 1; /* stay on top for as long as open */
+    top: 0; /* right up against the top */
+    left: 0; /* right up against the left */
+    background-color: floralwhite;
+    overflow-x: hidden; /* disable horizontal scroll */
+    padding-top: 2%; /* place start of contents 2% from top */
+    transition: 0.5s; /* transition time to slide into place */
+}
+
+/* The button IN the sidebar used to CLOSE the sidebar */
+
+.sidebar .closeButton {
+    position: absolute;
+    top: 1%;
+    right: 1%;
+    font-size: large;
+    margin-left: 80%;
+}
+
+/* The button used to OPEN the sidebar */
+#sidebarButton {
+    position: relative;
+    z-index: 1;
+    top: 0;
+    right: 0;
+    padding-right: 3%;
+    padding-top: 3%;
+    transition: margin-left 0.5s;
+    padding: 20px;
+}
+
+#sidebarButton .menuButton {
+    width: 25px;
+    height: 25px;  
+    opacity: 100%;
+}
+
+/* TODO: add sidebar content styling */

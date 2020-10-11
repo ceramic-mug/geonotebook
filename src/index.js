@@ -113,3 +113,24 @@ pois.forEach( function (file) {
 
 // listen for clicks on the map and add POI
 document.addEventListener('click', map.on('click', onMapClick))
+
+// Managing sidebar actions
+
+sidebarButton = document.getElementById("sidebarButton")
+sidebar =  document.getElementById("sidebar")
+
+sidebarButton.addEventListener("click",openSideBar)
+
+// Opens the sidebar (left)
+
+function openSideBar() {
+    sidebar.style.width = "200px";
+    sidebarButton.style.marginLeft = "20";
+}
+
+// Closes the sidebar
+
+function closeSideBar() {
+    sidebar.style.width = "0px";
+    sidebarButton.style.marginLeft = "0px";
+}

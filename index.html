@@ -1,14 +1,29 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<meta charset="UTF-8">
-		<title>🌍 GeoNotebook</title>
-		<link rel="stylesheet" href="./css/main.css"/>
-		<link rel="stylesheet" href="bower_components/leaflet/dist/leaflet.css" />
-	</head>
-	<body>
-		<div id="map"></div>
-		<script src="./src/index.js">
-		</Script>
-	</body>
+  <head>
+    <meta charset="UTF-8">
+    <title>🌍 GeoNotebook</title>
+    <link rel="stylesheet" href="./css/main.css"/>
+    <link rel="stylesheet" href="bower_components/leaflet/dist/leaflet.css" />
+  </head>
+  <body>
+
+    <!-- TODO: Make sidebar button:
+      1. Show up (not be covered over by map)
+      2. An image (don't use button HTML class) -->
+
+      <div id="sidebarButton">
+        <img class="menuButton" src="img/menu.svg">
+      </div>
+
+    <div id="sidebar" class="sidebar">
+      <button class="closeButton" onclick="closeSideBar()">&times;</button>
+    Test Sidebar
+    </div>
+
+    <div id="map">
+      <script src="./src/index.js"></Script>
+    </div>
+
+  </body>
 </html>
