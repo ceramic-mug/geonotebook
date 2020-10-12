@@ -43,13 +43,13 @@ ipcMain.on('load-pois', function(event) {
 	    return console.log('Unable to scan poi direcory: ' + err)
 	}
 	var pois = []
-	folders.forEach(function (folder) {
-	    dir = './poi/'+folder+'/'
+	for (i = 0; i<folders.length; i++){
+		if (folders[i] == '.DS_Store') continue;
+		dir = './poi/'+folders[i]+'/'
 	    file = dir + 'head.txt'
-
 	    // send the file back for processing
 	    pois.push(file)
-	})
+	}
 	event.returnValue = pois
 	})})
 

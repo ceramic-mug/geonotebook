@@ -6,6 +6,7 @@ const { ipcRenderer } = require('electron');
 /* ******** Constants ********* */
 
 const strMapObject = 'map'
+const tmpPoiImgURL = './img/tmp_newPoi.svg'
 
 const layerMapbox = {
     'url': 'https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}',
@@ -23,6 +24,12 @@ const layer = {
 };
 
 const intComfyZoom = 13;
+
+const tmpIcon = L.icon({
+    iconUrl: tmpPoiImgURL,
+    iconSize: [50, 50],
+    iconAnchor: [25, 25]
+})
 
 /* structures */
 
@@ -63,10 +70,6 @@ function datestring() {
 //     marker.bindPopup(popupText(name,datestring(),ll)).openPopup();
 // }
 
-function onMapClick(e) {
-    ipcRenderer.sendSync('map-click')
-}
-
 function popupText(t,d,c) {
     return "<h1>"+t+"</h1>"+'<i>'+d+'</i><br><code>'+c+'</code>'
 }
@@ -84,7 +87,6 @@ L.tileLayer(layer['mapbox']['url'], {
     accessToken: layer['mapbox']['accessToken']
 }).addTo(map);
 
-
 // add saved pois to map
 pois = ipcRenderer.sendSync('load-pois')
 
@@ -95,7 +97,7 @@ pois.forEach( function (file) {
     fs.readFile(file, 'utf8', function(err, data) {
 	if (err) {
 	    return console.log(err)
-	}
+    }
 
 	// call regular expression on the contents of the header file
 	info = reHead.exec(data)
@@ -113,6 +115,51 @@ pois.forEach( function (file) {
 
 // listen for clicks on the map and add POI
 document.addEventListener('click', map.on('click', onMapClick))
+
+// On map click:
+// (1) center the map to the location of the click
+// (2) create a temporary layer on the map visualized as
+//     a small rounded box with dashed outline to indicate
+//     location of click and temp status
+// (3) Prompt user and ask if add location or not
+//      -> If yes, add send 'add-poi' to main process
+//      -> If no, delete temporary layer and return 0
+
+function onMapClick(e) {
+    map.panTo( // step 1
+        e.latlng,
+        Animation=true
+    )
+    
+    // create temporary marker
+    curLat = e.latlng.lat
+    curLong = e.latlng.long
+
+    tmpMarker = L.marker(e.latlng, {icon: tmpIcon})
+    tmpMarker.addTo(map)
+
+    // prompt user to add location or not
+    addPrompt = document.createElement("div")
+
+    yesButton = document.createElement("button")
+    yesButton.setAttribute("id","yesButton")
+    yesButton.setAttribute("id","yesButton")
+    yesButton.innerHTML = "&check;"
+
+    noButton = document.createElement("button")
+    noButton.setAttribute("id","noButton")
+    noButton.innerHTML = "&cross;"
+
+    addPrompt.innerHTML = "Save location?" 
+    addPrompt.appendChild(yesButton)
+    addPrompt.appendChild(noButton)
+
+    document.body.insertBefore(addPrompt, document.getElementById('map'))
+
+    // TODO: get prompt buttons to show up and work properly
+
+    // ipcRenderer.sendSync('map-click')
+}
 
 // Managing sidebar actions
 
