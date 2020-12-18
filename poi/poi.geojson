@@ -1,0 +1,34 @@
+
+{
+    "type": "FeatureCollection",
+    "features": [{
+        "type": "Feature",
+        "geometry": {
+            "type": "Point",
+            "coordinates": [38.4139,-82.4517]
+        },
+        "properties": {
+            "title": "Long Title for Marker",
+            "description": "this is a one-line description",
+            "categories": ["cat1","cat2","cat3"],
+            "made": "2020-9-27",
+            "edited": "2020-9-27",
+            "icon": "🖐"
+        }
+    },
+    {
+        "type": "Feature",
+        "geometry": {
+            "type": "Point",
+            "coordinates": [38.3728,-82.4434]
+        },
+        "properties": {
+            "title": "Home",
+            "description": "this is a one-line description",
+            "categories": ["visit"],
+            "made": "2020-8-25",
+            "edited": "2020-8-25",
+            "icon": "🏡"
+        }
+    }]
+}
