@@ -28,6 +28,10 @@ h1 {
     /* TODO: stylize form to collect location data */
 }
 
+iconPick {
+    cursor: pointer;
+}
+
 /********** MENUS **************/
 
 .sidebar {

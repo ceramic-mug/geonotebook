@@ -12,6 +12,8 @@ const iconDir = './img/svg/'
 let config = JSON.parse(fs.readFileSync(configFile)) /* can be edited, update at program shutdown */
 let pois = JSON.parse(fs.readFileSync(poiFile)) /* can be edited, update at program shutdown */
 
+const con = require('electron').remote.getGlobal('console')
+
 const strMapObject = 'map'
 const tmpPoiImgURL = './img/tmp_newPoi.svg'
 
@@ -20,13 +22,10 @@ const layerMapbox = {
     'attribution': 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors,'+
 	'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
     'maxZoom': 18,
-    'id': 'ceramicmug/cke7lvu382bhs19o4l2aev08b',
+    'id': 'ceramicmug/cke7lvu382bhs19o4l2aev08b', // geonotebook style
     'tileSize': 512,
     'zoomOffset': -1,
-    // for personal styles
     'accessToken': 'pk.eyJ1IjoiY2VyYW1pY211ZyIsImEiOiJja2U3bGxxaDAxbzE2MzFzempsb3Jkam9kIn0.BJX4awVLutkNLqHahwJOEw'
-    // for base mapBox (below)
-    // 'accessToken': 'pk.eyJ1IjoiY2VyYW1pY211ZyIsImEiOiJja2U3bG9nZngxbzN0MnhudDY0cjcxdmtuIn0.xIox5D1GCX_Sy-7ARCFtBg'
 };//
 
 const layer = {
@@ -34,7 +33,6 @@ const layer = {
 };
 
 const intComfyZoom = 13;
-
 const ICONSIZE = 50;
 
 const tmpIcon = L.icon({
@@ -43,12 +41,13 @@ const tmpIcon = L.icon({
     iconAnchor: [ICONSIZE/2, ICONSIZE/2]
 })
 
-/* structures */
+let iconList =  config["iconList"]
+let iconURLs = new Array(iconList.length)
 
-/* ************* REGEX ************* */
-
-/* gobs coords from leaflet coord pair */
-var reHead = /title: (.*)\ncoords: (.*),(.*)\ndate: (.*)/
+for (i=0; i<iconList.length; i++){
+    iconURLs[i] = iconDir+twemoji.convert.toCodePoint(iconList[i]).toUpperCase()+'.svg'
+    iconURLs[i] = iconURLs[i].replace("-FE0F","")
+}
 
 ///////// FUNCTIONS //////////
 
@@ -64,16 +63,8 @@ function datestring() {
     return yr + '-' + mon + '-' + dy
 }
 
-// When map is clicked, create a popup with the coordinates of the click and date of click
-// function onMapClick(e) {
-
-//     ll = e.latlng.toString().replace('LatLng(','').replace(')','')
-
-//     var marker = L.marker(e.latlng).addTo(map);
-
-//     marker.bindPopup(popupText(name,datestring(),ll)).openPopup();
-// }
-
+// Convert title, description, and latlng coords to properly formatted html
+// for popup
 function popupText(t,d,c) {
     return "<h1>"+t+"</h1>"+'<i>'+d+'</i><br><code>'+c+'</code>'
 }
@@ -109,7 +100,7 @@ for (i=0; i < poiLen; i++){
     // create the icon object
     let icon = L.icon({
         iconUrl: icnUrl,
-        iconSize: [50, 50]
+        iconSize: [ICONSIZE, ICONSIZE]
     })
     // create the marker and add it to the map
     let m = L.marker(
@@ -121,81 +112,91 @@ for (i=0; i < poiLen; i++){
         poi['properties']['description'],
         poi['geometry']['coordinates']
     ))
+    L.DomUtil.addClass(m._icon, 'poiMarker');
 }
-
-// for getting various emoji codes // TODO: remove for release
-console.log(twemoji.convert.toCodePoint('📂'))
-
-// iterate through returned list of files
-// pois.forEach( function (file) {
-
-//     // read the file, root out errors, and place it on the map with popup info
-//     fs.readFile(file, 'utf8', function(err, data) {
-// 	if (err) {
-// 	    return console.log(err)
-//     }
-
-// 	// call regular expression on the contents of the header file
-// 	info = reHead.exec(data)
-// 	var latlng = L.latLng(info[2],info[3])
-// 	var title = reHead.exec(data)[1]
-// 	var date = reHead.exec(data)[4]
-
-// 	// Set marker and add text to popup
-// 	var marker = L.marker(latlng).addTo(map)
-// 	ll = latlng.toString().replace('LatLng(','').replace(')','')
-// 	marker.bindPopup(popupText(title,date,ll));
-
-//     })
-// })
 
 // listen for clicks on the map and add POI
 document.addEventListener('click', map.on('click', onMapClick))
 
 // On map click:
-// (1) center the map to the location of the click
-// (2) create a temporary layer on the map visualized as
-//     a small rounded box with dashed outline to indicate
-//     location of click and temp status
-// (3) Prompt user and ask if add location or not
-//      -> If yes, add send 'add-poi' to main process
-//      -> If no, delete temporary layer and return 0
-
+//      (1) Present user with menu of icons (leaflet popup)
+//      (2.1) if icon click, add to map and prompt user for title and description
+//      (2.2) else close popup (user clicks back to map)
 function onMapClick(e) {
+
+    // HTML container for menu 
+    let container = document.createElement("div");
+
+    // Build icon string from config list
+    let iconString = "<div id=\"iconTable\" sandbox=\"allow-same-origin allow-scripts allow-popups allow-forms\"><table>"
+    let iconListLen = iconList.length
+
+    // Build as table with IDs the path to icons
+    for (i=0; i<iconListLen; i++){
+        if(i % 5 == 0){
+            iconString += "<tr>"
+        }
+        iconString += "<td>" // start table element
+        iconString += "<form id=\""
+        iconString += iconURLs[i]
+        iconString += "\"><img id=\""
+        iconString += iconURLs[i] // link
+        iconString += "\" class=\"iconPick\" src=\""
+        iconString += iconURLs[i]
+         iconString += "\" width=\"30\"></img>"
+        iconString += "</td>" // end table element
+        if((i % 5 == 4) && (i != iconListLen-1)){
+            iconString += "</tr>"
+        }
+    }
+    iconString += "</tr>"
+    iconString += "</table></div>"
+    
+    // add HTML to container
+    container.innerHTML = iconString
+
+    // create the popup
+    var popup = L.popup()
+    .setLatLng(e.latlng)
+    .setContent(container)
+    .openOn(map);
+
+    // scroll to center new popup
     map.setView(e.latlng, map.getZoom(), { // center view
         "animate": true,
         "pan": {
           "duration": 0.5
         }
       });
-    
-    // create temporary marker
-    curLat = e.latlng.lat
-    curLong = e.latlng.long
 
-    // create the icon object
-    let tmpIcon = L.icon({
-        iconUrl: iconDir.concat(twemoji.convert.toCodePoint(config['defaultIcon']),'.svg'),
-        iconSize: [50, 50],
-        tooltipAnchor: [0, -10],
-    })
-    tmpMarker = L.marker(e.latlng, {icon: tmpIcon})
-    tmpMarker.addTo(map)
-
-    tmpMarker.bindTooltip(
-        e.latlng.toString().replace('LatLng(','').replace(')','') + "<br>",
-        {
-            permanent: true
-        }
-    )
-
-    // ipcRenderer.sendSync('map-click')
-
-    // TODO: Conditionally save marker and add title, description, etc.
-    //          if save, add marker to poi
-    //          CHOOSE ~20 emoji icons
-    //          *remember to rewrite pois.geojson at SIGKILL
+    let newIconSize = ICONSIZE * (map.getZoom()/13)**1.5
+    // if an icon is clicked, add it to the map
+    container.onclick = function(s) {
+        var target = s.target
+        let icon = L.icon({
+            iconUrl: target.id,
+            iconSize: [newIconSize, newIconSize]
+        })
+        // create the marker and add it to the map
+        let m = L.marker(
+            e.latlng,
+            {icon : icon}
+        ).addTo(map)
+        L.DomUtil.addClass(m._icon, 'poiMarker');
+        map.closePopup()
+        // TODO: Prompt user to add name and description and
+        //       save to pois.geojson
+    }
 }
+
+map.on('zoomend', function() {
+    var poiMarkers = document.getElementsByClassName('poiMarker');
+    var newzoom = '' + (ICONSIZE * (map.getZoom()/13)**1.5) +'px';
+    for (var i in poiMarkers) {
+        poiMarkers[i].style["width"]=newzoom;
+        poiMarkers[i].style["height"]=newzoom;
+    }
+});
 
 // Managing sidebar actions
 
