@@ -19,6 +19,15 @@ h1 {
     margin-bottom: 0px
 }
 
+input.popupTitle {
+    font-size: 25px;
+    font-family: inherit;
+    border: none;
+    border-color: transparent;
+    outline: none;
+    width: inherit;
+}
+
 #nameWin {
     text-align: center;
     vertical-align: middle

@@ -66,7 +66,7 @@ function datestring() {
 // Convert title, description, and latlng coords to properly formatted html
 // for popup
 function popupText(t,d,c) {
-    return "<h1>"+t+"</h1>"+'<i>'+d+'</i><br><code>'+c+'</code>'
+    return '<form id=\"titleForm\"><input maxlength=\"20\" type=\"text\" class=\"popupTitle\" id=\"'+c+'\" value=\"'+t+'\" /></form>'+'<i>'+d+'</i><br><code>'+c+'</code>'
 }
 
 /* ************* RENDERER PROCESS  ************** */
@@ -87,6 +87,8 @@ L.tileLayer(        layer['mapbox']['url'], {
 //add zoom control with your options
 map.zoomControl.setPosition('topright');
 
+markerLayer = L.featureGroup().addTo(map)
+
 // TODO: use layers instead of adding directly to enable adding/removing/editing markers
 // add saved pois to map
 let poiLen = pois.features.length;
@@ -105,15 +107,33 @@ for (i=0; i < poiLen; i++){
     // create the marker and add it to the map
     let m = L.marker(
         poi['geometry']['coordinates'],
-        {icon : icon}
-    ).addTo(map)
+        {
+            icon : icon,
+            attribution : i
+        }
+    )
     m.bindPopup(popupText(
         poi['properties']['title'],
         poi['properties']['description'],
         poi['geometry']['coordinates']
     ))
+    markerLayer.addLayer(m);
     L.DomUtil.addClass(m._icon, 'poiMarker');
 }
+
+// Edit title of marker from popup
+markerLayer.on("click", function (event) {
+    var clickedMarker = event.layer;
+    document.getElementById('titleForm').onsubmit = function() { 
+        let coords = clickedMarker.getLatLng()
+        coords = coords.lat+','+coords.lng
+        let newTitle = document.getElementById(coords).value
+        console.log(clickedMarker.getAttribution())
+        return false //TODO found bug where if one is clicked and then another is clicked, the second doesnt return properly
+    };
+    return false
+    // do some stuff…
+});
 
 // listen for clicks on the map and add POI
 document.addEventListener('click', map.on('click', onMapClick))
