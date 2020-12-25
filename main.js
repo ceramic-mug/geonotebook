@@ -23,13 +23,19 @@ function createWindow() {
 
     // load index.html of app
 	MainWin.loadFile('index.html')
-	return MainWin
+	MainWin.on('close', function() { //   <---- Catch close event
+
+		// The dialog box below will open, instead of your app closing.
+		console.log('closing main window')
+		MainWin.webContents.send('handle exit')
+	});
 }
 
 /* ********* STARTUP ********* */
 
 // wait until the app starts, then load the main window
-MainWin = app.whenReady().then(createWindow)
+app.whenReady().then(createWindow)
+
 console.info("Main window created.")
 
 // create a folder to hold pois if note already created
@@ -37,31 +43,3 @@ if (!fs.existsSync('./poi')) {
 	fs.mkdir('./poi', function() {});
 	
 }
-
-// Create GeoJson to hold all POIs if not in POI folder
-
-
-
-
-
-// 	/* ********************** */
-
-// /* ******* POI Map Interactions ******* */
-ipcMain.on('map-click', function(event) {
-	app.showEmojiPanel();
-	// console.log('Map clicked. Enter name for new POI or return NULL');
-	// const nameWinHeight = 150;
-	// const nameWinWidth = 400;
-	// var nameWin = new BrowserWindow({
-	// 	width: nameWinWidth,
-	// 	height: nameWinHeight,
-	// 	frame: false,
-	// 	titleBarStyle: "hidden",
-	// 	parent: MainWin,
-	// 	webPreferences: {
-    //         nodeIntegration: true
-    //     }
-    // })
-	// nameWin.loadFile('./src/nameWin.html')
-	// ipcMain.on('no-name', nameWin.close)
-})

@@ -66,7 +66,7 @@ function datestring() {
 // Convert title, description, and latlng coords to properly formatted html
 // for popup
 function popupText(t,d,c) {
-    return '<form id=\"titleForm\"><input maxlength=\"20\" type=\"text\" class=\"popupTitle\" id=\"'+c+'\" value=\"'+t+'\" /></form>'+'<i>'+d+'</i><br><code>'+c+'</code>'
+    return '<form id=\"titleForm\"><input maxlength=\"20\" type=\"text\" class=\"popupTitle\" id=\"'+c+'_title\" value=\"'+t+'\" /></form>'+'<i>'+d+'</i><br><code>'+c+'</code>'
 }
 
 /* ************* RENDERER PROCESS  ************** */
@@ -127,13 +127,38 @@ markerLayer.on("click", function (event) {
     document.getElementById('titleForm').onsubmit = function() { 
         let coords = clickedMarker.getLatLng()
         coords = coords.lat+','+coords.lng
-        let newTitle = document.getElementById(coords).value
-        console.log(clickedMarker.getAttribution())
-        return false //TODO found bug where if one is clicked and then another is clicked, the second doesnt return properly
+        let newTitle = document.getElementById(coords+'_title').value 
+        i = parseInt(clickedMarker.getAttribution())
+        pois.features[i]['properties']['title'] = newTitle;
+        console.log(pois.features[i]['properties']['title'])
+        clickedMarker.unbindPopup()
+        clickedMarker.bindPopup(popupText(
+            pois.features[i]['properties']['title'],
+            pois.features[i]['properties']['description'],
+            pois.features[i]['geometry']['coordinates']
+        ))
+        fs.writeFileSync(poiFile, JSON.stringify(pois));
+        clickedMarker.closePopup()
+        return false;
     };
     return false
     // do some stuff…
 });
+
+// Switch to blogging window
+markerLayer.on("dblclick", function (event) {
+    var clickedMarker = event.layer;
+    console.log(clickedMarker)
+})
+
+//do something when app is closing
+ipcRenderer.on('handle exit', function() {
+    // overwrite geojson
+    let poisString = JSON.stringify(pois)
+    console.log(poisString)
+    fs.writeFile(poiFile, poisString)
+    return 0;
+})
 
 // listen for clicks on the map and add POI
 document.addEventListener('click', map.on('click', onMapClick))
@@ -197,17 +222,44 @@ function onMapClick(e) {
             iconUrl: target.id,
             iconSize: [newIconSize, newIconSize]
         })
+        // add new feature to pois and write to JSON
+    
+        newFeat = {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [e.latlng.lat, e.latlng.lng]
+            },
+            "properties": {
+                "title": "Untitled",
+                "description": "description...",
+                "categories": [],
+                "made": datestring(),
+                "edited": datestring(),
+                "icon": twemoji.convert.fromCodePoint(target.id.match('.*/(.*).svg')[1])
+            }
+        }
+
+        pois.features.push(newFeat)
+        fs.writeFileSync(poiFile, JSON.stringify(pois));
+
         // create the marker and add it to the map
         let m = L.marker(
             e.latlng,
             {icon : icon}
         ).addTo(map)
+        m.bindPopup(popupText(
+            'Enter title...',
+            'Enter description...',
+            e.latlng.lat+','+e.latlng.lng
+        ))
+        markerLayer.addLayer(m);
         L.DomUtil.addClass(m._icon, 'poiMarker');
         map.closePopup()
         // TODO: Prompt user to add name and description and
         //       save to pois.geojson
     }
-}
+} // TODO: Bug when marker not chosen and start to zoom, zoom looks for undefined
 
 map.on('zoomend', function() {
     var poiMarkers = document.getElementsByClassName('poiMarker');
