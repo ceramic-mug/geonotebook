@@ -11,7 +11,7 @@ function createWindow() {
     const mainWinWidth = 800
     console.info("Window height: %d", mainWinHeight);
     console.info("Window width: %d", mainWinWidth);
-    const MainWin = new BrowserWindow({
+    MainWin = new BrowserWindow({
 	width: mainWinWidth,
 	height: mainWinHeight,
 	frame: true,
@@ -29,6 +29,7 @@ function createWindow() {
 		console.log('closing main window')
 		MainWin.webContents.send('handle exit')
 	});
+
 }
 
 /* ********* STARTUP ********* */

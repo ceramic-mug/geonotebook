@@ -49,8 +49,11 @@ for (i=0; i<iconList.length; i++){
     iconURLs[i] = iconURLs[i].replace("-FE0F","")
 }
 
+let poisDict = {}
+
 ///////// FUNCTIONS //////////
 
+// Get current date and return as string.
 // No arguments. Return yyyy-mm-dd string
 function datestring() {
     // create a datestring to add to the popup
@@ -63,16 +66,21 @@ function datestring() {
     return yr + '-' + mon + '-' + dy
 }
 
+
 // Convert title, description, and latlng coords to properly formatted html
 // for popup
 function popupText(t,d,c) {
-    return '<form id=\"titleForm\"><input maxlength=\"20\" type=\"text\" class=\"popupTitle\" id=\"'+c+'_title\" value=\"'+t+'\" /></form>'+'<i>'+d+'</i><br><code>'+c+'</code>'
+    return '<button type=\"button\" class=\"popupButton\" id=\"'+c+'_popupDeleteButton\">🗑</button><button type=\"button\" class=\"popupButton\" id=\"'+c+'_popupBlogButton\">ℹ️</button><br><span type=\"text\" class=\"popupTitle\" id=\"'+c+'_title\" contenteditable>'+t+'</span><br><span type=\"text\" class=\"popupDescription\" id=\"'+c+'_description\"  contenteditable>'+d+'</span><br><code>'+c+'</code>'
+}
+
+function poiBlogHeaderText(t,d,c) {
+    return '<span type=\"text\" class=\"popupTitle\" id=\"'+c+'_title\">'+t+'</span><br><span type=\"text\" class=\"popupDescription\" id=\"'+c+'_description\">'+d+'</span><br><code>'+c+'</code>'
 }
 
 /* ************* RENDERER PROCESS  ************** */
 
 /* create the map */
-var map = L.map(strMapObject, {
+var map = L.map(strMapObject, {attributionControl: true}, {
                 zoomControl: true
             }).setView(config.startCoords, intComfyZoom);
 L.tileLayer(        layer['mapbox']['url'], {
@@ -109,9 +117,9 @@ for (i=0; i < poiLen; i++){
         poi['geometry']['coordinates'],
         {
             icon : icon,
-            attribution : i
         }
     )
+    poisDict[poi['geometry']['coordinates']] = i
     m.bindPopup(popupText(
         poi['properties']['title'],
         poi['properties']['description'],
@@ -121,29 +129,83 @@ for (i=0; i < poiLen; i++){
     L.DomUtil.addClass(m._icon, 'poiMarker');
 }
 
-// Edit title of marker from popup
+// Drawer sliding up from bottom to hold poi blog
+poiBlogContainer = document.getElementById("poiBlogContainer")
+
+// POPUP EDITING
 markerLayer.on("click", function (event) {
     var clickedMarker = event.layer;
-    document.getElementById('titleForm').onsubmit = function() { 
-        let coords = clickedMarker.getLatLng()
-        coords = coords.lat+','+coords.lng
-        let newTitle = document.getElementById(coords+'_title').value 
-        i = parseInt(clickedMarker.getAttribution())
-        pois.features[i]['properties']['title'] = newTitle;
-        console.log(pois.features[i]['properties']['title'])
-        clickedMarker.unbindPopup()
-        clickedMarker.bindPopup(popupText(
-            pois.features[i]['properties']['title'],
-            pois.features[i]['properties']['description'],
-            pois.features[i]['geometry']['coordinates']
-        ))
+    let coords = clickedMarker.getLatLng()
+    coords = coords.lat+','+coords.lng
+
+    document.getElementById(coords+'_popupDeleteButton').addEventListener(type='click', function() {
+        // delete from map
+        markerLayer.removeLayer(clickedMarker)
+        pois.features.splice(poisDict[coords],1)
+        poiLen -= 1
         fs.writeFileSync(poiFile, JSON.stringify(pois));
-        clickedMarker.closePopup()
-        return false;
-    };
+        return false
+    })
+
+    document.getElementById(coords+'_popupBlogButton').addEventListener(type='click', function() {
+       // scroll POI blog up to cover window
+        poiBlogContainer.style.height="100\%"
+        // TODO
+        htmlString = '<div id=\"poiBlogHeader\">'
+        htmlString += '<br>'
+        htmlString += '<div class=\"poiBlogImgDiv\">'
+        htmlString += '<img src=\"' + clickedMarker.options.icon.options.iconUrl + '\" style=\"height:70pt\">'
+        htmlString += '</div>'
+        htmlString += '<div class=\"poiBlogTitleDiv\">'
+        htmlString += poiBlogHeaderText(pois.features[poisDict[coords]]['properties']['title'], pois.features[poisDict[coords]]['properties']['description'], coords)
+        htmlString += '</div></div><br><hr>'
+        poiBlogContainer.innerHTML += htmlString
+    })
+    
+    document.getElementById(coords+'_title').addEventListener(type='keydown', function(e) {
+        if (e.code == 'Enter') {
+            e.preventDefault()
+            let newTitle = document.getElementById(coords+'_title').textContent 
+            let newDescription = document.getElementById(coords+'_description').textContent
+            i = poisDict[coords]
+            pois.features[i]['properties']['title'] = newTitle;
+            pois.features[i]['properties']['description'] = newDescription;
+            clickedMarker.unbindPopup()
+            clickedMarker.bindPopup(popupText(
+                pois.features[i]['properties']['title'],
+                pois.features[i]['properties']['description'],
+                pois.features[i]['geometry']['coordinates']
+            ))
+            fs.writeFileSync(poiFile, JSON.stringify(pois));
+            map.closePopup()
+            return false;
+        }
+    })
+
+    document.getElementById(coords+'_description').addEventListener(type='keydown', function(e) {
+        if (e.code == 'Enter') {
+            console.log(e)
+            e.preventDefault()
+            let newTitle = document.getElementById(coords+'_title').textContent 
+            let newDescription = document.getElementById(coords+'_description').textContent 
+            i = poisDict[coords]
+            pois.features[i]['properties']['title'] = newTitle;
+            pois.features[i]['properties']['description'] = newDescription;
+            clickedMarker.unbindPopup()
+            pop = clickedMarker.bindPopup(popupText(
+                pois.features[i]['properties']['title'],
+                pois.features[i]['properties']['description'],
+                pois.features[i]['geometry']['coordinates']
+            ))
+            fs.writeFileSync(poiFile, JSON.stringify(pois));
+            map.closePopup()
+            return false;
+        };
+    })
+
     return false
-    // do some stuff…
 });
+
 
 // Switch to blogging window
 markerLayer.on("dblclick", function (event) {
@@ -201,7 +263,7 @@ function onMapClick(e) {
     container.innerHTML = iconString
 
     // create the popup
-    var popup = L.popup()
+    L.popup()
     .setLatLng(e.latlng)
     .setContent(container)
     .openOn(map);
@@ -217,13 +279,14 @@ function onMapClick(e) {
     let newIconSize = ICONSIZE * (map.getZoom()/13)**1.5
     // if an icon is clicked, add it to the map
     container.onclick = function(s) {
+        map.closePopup()
         var target = s.target
         let icon = L.icon({
             iconUrl: target.id,
             iconSize: [newIconSize, newIconSize]
         })
         // add new feature to pois and write to JSON
-    
+        poiLen += 1
         newFeat = {
             "type": "Feature",
             "geometry": {
@@ -239,23 +302,28 @@ function onMapClick(e) {
                 "icon": twemoji.convert.fromCodePoint(target.id.match('.*/(.*).svg')[1])
             }
         }
-
         pois.features.push(newFeat)
         fs.writeFileSync(poiFile, JSON.stringify(pois));
-
+        var popup = L.popup()
+        .setLatLng(e.latlng)
+        .setContent(popupText(
+            'Enter title...',
+            'Enter description...',
+            e.latlng.lat+','+e.latlng.lng
+        ))
         // create the marker and add it to the map
         let m = L.marker(
             e.latlng,
             {icon : icon}
         ).addTo(map)
-        m.bindPopup(popupText(
-            'Enter title...',
-            'Enter description...',
-            e.latlng.lat+','+e.latlng.lng
-        ))
+        poisDict[e.latlng.lat+','+e.latlng.lng] = poiLen - 1
+        m.bindPopup(popup)
         markerLayer.addLayer(m);
+        map.openPopup(popup)
+        markerLayer.fire('click', {
+            layer: m
+        })
         L.DomUtil.addClass(m._icon, 'poiMarker');
-        map.closePopup()
         // TODO: Prompt user to add name and description and
         //       save to pois.geojson
     }
@@ -288,4 +356,10 @@ function openSideBar() {
 function closeSideBar() {
     sidebar.style.width = "0px";
     sidebarButton.style.marginLeft = "0px";
+}
+
+// Closes poi blog
+function closePoiBlogContainer() {
+    poiBlogContainer.style.height = "0"
+    poiBlogContainer.innerHTML = '<button class=\"closeButton\" onclick=\"closePoiBlogContainer(this)\">Return to map</button>'
 }
