@@ -3,6 +3,7 @@ const L = require('leaflet');
 const twemoji = require('twemoji');
 const fs = require('fs');
 const { ipcRenderer, app } = require('electron');
+var glob = require("glob");
 
 /* ******** Constants ********* */
 
@@ -131,6 +132,22 @@ for (i=0; i < poiLen; i++){
 
 // Drawer sliding up from bottom to hold poi blog
 poiBlogContainer = document.getElementById("poiBlogContainer")
+poiPostContainer = document.getElementById("poiBlogPost")
+
+function poiBlog(coords) {
+
+    folder = './poi/'+coords
+    if (!fs.existsSync(folder)) {
+        fs.mkdir(folder, function() {});
+    }
+    posts = glob(folder+"/*.md")
+    poiBlogContainer.innerHTML += '<button type=\"button\" class=\"blogButton\" id=\"'+coords+'_blogAddPostButton\">Add post</button>'
+    document.getElementById(coords+'_blogAddPostButton').addEventListener('click', function() {
+        date = datestring()
+        file = fs.open(folder+'/'+date+Date().getHours()+Date().getMinutes()+'.md')
+
+    })
+}
 
 // POPUP EDITING
 markerLayer.on("click", function (event) {
@@ -160,6 +177,7 @@ markerLayer.on("click", function (event) {
         htmlString += poiBlogHeaderText(pois.features[poisDict[coords]]['properties']['title'], pois.features[poisDict[coords]]['properties']['description'], coords)
         htmlString += '</div></div><br><hr>'
         poiBlogContainer.innerHTML += htmlString
+        poiBlog(coords)
     })
     
     document.getElementById(coords+'_title').addEventListener(type='keydown', function(e) {
@@ -358,8 +376,9 @@ function closeSideBar() {
     sidebarButton.style.marginLeft = "0px";
 }
 
-// Closes poi blog
+// Close blog containier
+
 function closePoiBlogContainer() {
-    poiBlogContainer.style.height = "0"
-    poiBlogContainer.innerHTML = '<button class=\"closeButton\" onclick=\"closePoiBlogContainer(this)\">Return to map</button>'
+    poiBlogContainer.innerHTML =  '<button class=\"closeButton\" onclick=\"closePoiBlogContainer(this)\">Return to map</button>'
+    poiBlogContainer.style.height="0"
 }
