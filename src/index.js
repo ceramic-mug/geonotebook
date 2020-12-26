@@ -145,7 +145,7 @@ function poiBlog(coords) {
     document.getElementById(coords+'_blogAddPostButton').addEventListener('click', function() {
         date = datestring()
         file = fs.open(folder+'/'+date+Date().getHours()+Date().getMinutes()+'.md')
-
+        poiPostContainer
     })
 }
 
