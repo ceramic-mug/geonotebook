@@ -83,10 +83,23 @@ h1 {
 	bottom:0;
     width: 100%;
     height: 0px;
-    z-index: 1;
+    z-index: 2;
     left: 0;
     background-color: rgb(255, 255, 255);
     transition: 0.5s;
+}
+
+.blogPostText {
+    font-family: 'Menlo';
+    font-size: 15pt;
+    height: 90%;
+    position: absolute;
+    width: 96%;
+    bottom: 2%;
+    left: 2%;
+    right: 2%;
+    outline: none;
+    border: hidden;
 }
 
 iconPick {

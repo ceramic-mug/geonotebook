@@ -4,6 +4,7 @@ const twemoji = require('twemoji');
 const fs = require('fs');
 const { ipcRenderer, app } = require('electron');
 var glob = require("glob");
+var SimpleMDE = require("SimpleMDE")
 
 /* ******** Constants ********* */
 
@@ -133,21 +134,39 @@ for (i=0; i < poiLen; i++){
 // Drawer sliding up from bottom to hold poi blog
 poiBlogContainer = document.getElementById("poiBlogContainer")
 poiPostContainer = document.getElementById("poiBlogPost")
+poiPostText = document.getElementById("poiBlogPostTextArea")
 
 function poiBlog(coords) {
-
     folder = './poi/'+coords
     if (!fs.existsSync(folder)) {
         fs.mkdir(folder, function() {});
     }
-    posts = glob(folder+"/*.md")
+    posts = glob.sync(folder+"/*.md")
+    let numPosts = posts.length
+    if (numPosts != 0){
+        htmlString = '<ul>'
+        for (i=0; i < numPosts; i++){
+            htmlString += '\n<li>'+posts[i].match('.*/(.*)_.*_.*.md')[1]+'</li>'
+        }
+        htmlString += '</ul>'
+        // TODO: Open files that have been saved by clicking on them in the list
+    } else {
+        htmlString = ''
+    }
     poiBlogContainer.innerHTML += '<button type=\"button\" class=\"blogButton\" id=\"'+coords+'_blogAddPostButton\">Add post</button>'
+    poiBlogContainer.innerHTML += htmlString
     document.getElementById(coords+'_blogAddPostButton').addEventListener('click', function() {
+        let datething = new Date()
         date = datestring()
-        file = fs.open(folder+'/'+date+Date().getHours()+Date().getMinutes()+'.md')
-        var simplemde = new SimpleMDE({ element: poiPostContainer });
-        poiPostContainer.style.height = "80\%"
-    })
+        filename = folder+'/'+date+'_'+datething.getHours()+'_'+datething.getMinutes()+'.md'
+        poiPostContainer.style.height = "100\%"
+        document.getElementById('saveButton').addEventListener('click', function() {
+            text = poiPostText.value
+            fs.writeFileSync(filename,text)
+        })
+    },{
+        passive: true
+    })   
 }
 
 // POPUP EDITING
@@ -163,6 +182,8 @@ markerLayer.on("click", function (event) {
         poiLen -= 1
         fs.writeFileSync(poiFile, JSON.stringify(pois));
         return false
+    },{
+        passive: true
     })
 
     document.getElementById(coords+'_popupBlogButton').addEventListener(type='click', function() {
@@ -177,8 +198,10 @@ markerLayer.on("click", function (event) {
         htmlString += '<div class=\"poiBlogTitleDiv\">'
         htmlString += poiBlogHeaderText(pois.features[poisDict[coords]]['properties']['title'], pois.features[poisDict[coords]]['properties']['description'], coords)
         htmlString += '</div></div><br><hr>'
-        poiBlogContainer.innerHTML += htmlString
-        poiBlog(coords)
+        poiBlogContainer.innerHTML += htmlString 
+        while(poiBlog(coords));
+    },{
+        passive: true
     })
     
     document.getElementById(coords+'_title').addEventListener(type='keydown', function(e) {
@@ -199,6 +222,8 @@ markerLayer.on("click", function (event) {
             map.closePopup()
             return false;
         }
+    },{
+        passive: true
     })
 
     document.getElementById(coords+'_description').addEventListener(type='keydown', function(e) {
@@ -220,6 +245,8 @@ markerLayer.on("click", function (event) {
             map.closePopup()
             return false;
         };
+    },{
+        passive: true
     })
 
     return false
@@ -382,4 +409,24 @@ function closeSideBar() {
 function closePoiBlogContainer() {
     poiBlogContainer.innerHTML =  '<button class=\"closeButton\" onclick=\"closePoiBlogContainer(this)\">Return to map</button>'
     poiBlogContainer.style.height="0"
+}
+
+function closePoiPostContainer() {
+    poiPostContainer.innerHTML =  '<button class=\"closeButton\" onclick=\"closePoiPostContainer(this)\">Return to location page</button><button class=\"saveButton\" id=\"saveButton\">Save</button><br><textarea id=\"poiBlogPostTextArea\" class=\"blogPostText\"></textarea>'
+    poiPostContainer.style.height="0"
+}
+
+// Tabs in textareas are tabs
+
+var textareas = document.getElementsByTagName('textarea');
+var count = textareas.length;
+for(var i=0;i<count;i++){
+    textareas[i].onkeydown = function(e){
+        if(e.code=='Tab' || e.which==9){
+            e.preventDefault();
+            var s = this.selectionStart;
+            this.value = this.value.substring(0,this.selectionStart) + "\t" + this.value.substring(this.selectionEnd);
+            this.selectionEnd = s+1; 
+        }
+    }
 }
