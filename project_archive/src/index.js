@@ -1,10 +1,9 @@
 /* imports */
-const L = require('leaflet');
-const twemoji = require('twemoji');
-const fs = require('fs');
-const { ipcRenderer, app } = require('electron');
-var glob = require("glob");
-var SimpleMDE = require("SimpleMDE")
+import L from leaflet;
+import twemoji from twemoji
+import fs from fs
+import glob from glob
+import SimpleMDE from SimpleMDE
 
 /* ******** Constants ********* */
 

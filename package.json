@@ -1,36 +1,24 @@
 {
   "name": "geonotebook",
   "version": "1.0.0",
-  "description": "A notebook that includes space and time",
-  "main": "main.js",
-  "scripts": {
-    "start": "electron ."
+  "description": "Notebook using space and time",
+  "homepage": "https://github.com/ceramic-mug/geonotebook#readme",
+  "bugs": {
+    "url": "https://github.com/ceramic-mug/geonotebook/issues"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ceramic-mug/geonotebook.git"
   },
-  "keywords": [
-    "Map",
-    "Notebook"
-  ],
-  "author": "CeramicMug",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/ceramic-mug/geonotebook/issues"
-  },
-  "homepage": "https://github.com/ceramic-mug/geonotebook#readme",
-  "devDependencies": {
-    "electron": "^9.2.1"
+  "license": "MIT",
+  "author": "Joshua Eastman",
+  "type": "commonjs",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@joeattardi/emoji-button": "^4.6.0",
-    "electron-prompt": "^1.6.0",
-    "emoji-picker-element": "^1.3.0",
-    "glob": "^7.1.6",
-    "leaflet": "^1.7.1",
-    "mapbox-gl": "^1.12.0",
-    "simplemde": "^1.11.2",
-    "twemoji": "^13.0.1"
-  }
+    "leaflet": "^1.9.4"
+  },
+  "devDependencies": {}
 }

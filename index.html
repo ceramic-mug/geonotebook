@@ -1,36 +1,55 @@
 <!DOCTYPE html>
-<html>
-  <head>
+<html lang="en">
+<head>
     <meta charset="UTF-8">
-    <title>🌍 GeoNotebook</title>
-    <link rel="stylesheet" href="./css/main.css"/>
-    <link rel="stylesheet" href="bower_components/leaflet/dist/leaflet.css" />
-  </head>
-  <body>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌍 GeoNotebook</title> <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
 
-      <div id="sidebarButton">
-        <img class="menuButton" src="img/svg/E265.svg">
-      </div>
+    <link rel="stylesheet" href="style.css"> </head>
+<body>
 
-    <div id="sidebar" class="sidebar">
-      <button class="closeButton" onclick="closeSideBar()">&times;</button>
-    Test Sidebar
+    <header class="app-header">
+        <h1>GeoNotebook</h1> <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search locations by title, emoji, or description...">
+        </div>
+    </header>
+
+    <main class="app-main">
+        <button class = "saveMapViewButton" title="Save Start View" id="saveMapViewButton">Save Start View</button>
+        <div id="map"></div>
+    </main>
+
+    <div id="notebookModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" title="Close">&times;</span> <h2 id="modalTitle">My Notebook Entry</h2>
+            <input type="hidden" id="locationId">
+
+            <div class="form-group"> <label for="locationEmoji">Emoji:</label>
+                <input type="text" id="locationEmoji" placeholder="📌 (Use your device's emoji picker: Win + . or Cmd+Ctrl+Space)">
+            </div>
+            <div class="form-group"> <label for="locationTitle">Title:</label>
+                <input type="text" id="locationTitle" placeholder="e.g., Eiffel Tower Visit">
+            </div>
+            <div class="form-group"> <label for="locationDescription">Short Description:</label>
+                <input type="text" id="locationDescription" placeholder="e.g., Amazing views from the top!">
+            </div>
+            <div class="form-group"> <label for="locationMarkdown">Notebook (Markdown enabled):</label>
+                <textarea id="locationMarkdown" rows="10" placeholder="Write your notes here... You can use Markdown!"></textarea>
+            </div>
+            <div class="markdown-preview-container form-group"> <label>Markdown Preview:</label>
+                <div id="markdownPreview" class="markdown-preview"></div>
+            </div>
+            <button id="saveNotebookButton" class="button-primary">Save Location</button> <button id="deleteNotebookButton" class="button-danger" style="display: none;">Delete Location</button> </div>
     </div>
 
-    <div id="poiBlogPost" class="poiBlogPost">
-      <button class="closeButton" onclick="closePoiPostContainer(this)">Return to location page</button>
-      <button class="saveButton" id="saveButton">Save</button>
-      <br>
-      <textarea id="poiBlogPostTextArea" class="blogPostText"></textarea>
-    </div>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+     crossorigin=""></script>
 
-    <div id="poiBlogContainer" class="poiBlogContainer">
-      <button class="closeButton" onclick="closePoiBlogContainer(this)">Return to map</button>
-    </div>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
-    <div id="map">
-      <script src="./src/index.js"></Script>
-    </div>
-
-  </body>
+    <script src="main.js"></script>
+</body>
 </html>
